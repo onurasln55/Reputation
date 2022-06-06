@@ -44,3 +44,4 @@ def dosyadan_islem(api): #dosya konumu vermeden dosya arayüzü ile ekleme.
         print("File read error")
 api=input("Enter the Virustotal api key: ")#Bu bölgede api keyi dışarıdan giriyoruz.
 dosyadan_islem(api)
+input("Click Enter to close")
