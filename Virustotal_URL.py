@@ -33,6 +33,13 @@ def dosyadan_islem(api): #dosya konumu vermeden dosya arayüzü ile ekleme.
                 u=i.strip()
                 sonuc=vt_url_scan(i, api)
                 print(u+","+str(sonuc))
+                s=u+","+str(sonuc)+"\n"
+                try:
+                    with open(x+'_s.csv', 'a') as f:
+                        f.write(s)
+                        f.close()
+                except:
+                    print("CSV oluşturma hatası")
     except:
         print("File read error")
 api=input("Enter the Virustotal api key: ")#Bu bölgede api keyi dışarıdan giriyoruz.
