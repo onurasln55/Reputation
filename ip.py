@@ -1,0 +1,126 @@
+import requests
+import json
+
+def api_check():
+    try:
+        with open("api_list.txt",'r') as api:
+            vt_api=api.readline()
+            abuseip_api=api.readline()
+
+            print("Virustotal:\t"+vt_api)
+            print("AbuseIPDB: \t"+abuseip_api)
+            print("Kayıtlı API keylerdir.")
+            return vt_api,abuseip_api
+
+    except:
+        print("kayıtlı api yok. api girin")
+        with open("api_list.txt",'w') as api:
+            vt_api=input("Virustotal api key girin:")
+            api.writelines(vt_api)
+            api.write("\n")
+            abuseip_api=input("AbuseIPDB api key girin:")
+            api.writelines(abuseip_api)
+            print("API Kaydedildi programı yeniden başlatın.")
+            api.close()
+            return vt_api,abuseip_api
+
+
+def vt_ip_sorgu(ip,key_vt):
+    url = "https://www.virustotal.com/api/v3/ip_addresses/"+ip
+    headers = {
+        "Accept": "application/json",
+        "x-apikey": key_vt
+    }
+    try:
+        response = requests.request("GET", url, headers=headers)
+        json_response = json.loads(response.text)
+        return json_response["data"]["attributes"]["last_analysis_stats"]["malicious"]
+    except:
+        return "Hata. Girdi veya API key hatalı Kontrol edin"
+
+def abuse_ip_sorgu(ip,key_abuse):
+    url = 'https://api.abuseipdb.com/api/v2/check'
+    querystring = {
+        'ipAddress':ip ,
+        'maxAgeInDays': '90'
+    }
+    headers = {
+        'Accept': 'application/json',
+        'Key': key_abuse
+    }
+    try:
+        response = requests.request(method='GET', url=url, headers=headers, params=querystring)
+        json_response = json.loads(response.text)
+        return json_response["data"]["abuseConfidenceScore"]
+    except:
+        return "Hata. Girdi veya API key hatalı kontrol edin"
+
+def ip():
+    api_keys=api_check()
+    key_vt=str(api_keys[0]).strip()
+    key_abuse=str(api_keys[1]).strip()
+    print("Girdi türü seçin:\n1.txt dosyası ise \n2.Tek bir ip için ")
+    tur_secimi=int(input())
+    if tur_secimi==1:
+        from tkinter import Tk
+        from tkinter.filedialog import askopenfilename
+
+        pencere=Tk()
+        pencere.attributes('-topmost', 1)
+        pencere.withdraw()
+        girdi_dosyasi = askopenfilename(filetypes=[('.txt', '.txt')], title='IP listesi dosyasını seçin')
+
+        if girdi_dosyasi!="":
+            from tkinter import Tk
+            from tkinter.filedialog import asksaveasfilename
+            pencere = Tk()
+            pencere.attributes('-topmost', 1)
+            pencere.withdraw()
+            cikti_dosyasi = asksaveasfilename(filetypes=[('.txt', '.txt')], title='Çıktı dosyasını kaydedin.')
+
+            if cikti_dosyasi!="":
+                cikti_dosyasi=cikti_dosyasi+".txt"
+                with open(cikti_dosyasi, 'w+') as sonuc_dosyası:
+                    sonuc_dosyası.write("IP Adresi,AbuseipDB skoru, Virustotal skoru,AbuseipDB Link,Virustotal Link,IPalyzer Link\n")
+                    print("IP Adresi,AbuseipDB skoru, Virustotal skoru,AbuseipDB Link,Virustotal Link,IPalyzer Link")
+                    with open(girdi_dosyasi) as f:
+                        data = [row for row in f]
+                        for d in data:
+                            try:
+                                response_abuse = abuse_ip_sorgu(d,key_abuse)
+                                response_abuse = str(response_abuse)
+                                response_vt=vt_ip_sorgu(d,key_vt)
+                                response_vt=str(response_vt)
+                                ip = d
+                                ip = str(ip)
+
+                                if response_abuse == "Hata. Girdi veya API key hatalı kontrol edin":
+                                    sonuc_dosyası.writelines(ip.strip() + ", ip girdisi hatalı lütfen düzeltin.\n")
+                                    print(ip.strip() + ", ip girdisi hatalı lütfen düzeltin.")
+
+                                else:
+                                    sonuc_dosyası.writelines(ip.strip() + "," + response_abuse + "," + response_vt + " ,https://www.abuseipdb.com/check/" + ip.strip() + " ,https://www.virustotal.com/gui/ip-address/" + ip.strip() +", https://www.ipalyzer.com/"+ip.strip()+ "\n")
+                                    print(ip.strip() + "," + response_abuse + "," + response_vt + " ,https://www.abuseipdb.com/check/" + ip.strip() + " ,https://www.virustotal.com/gui/ip-address/" + ip.strip()+", https://www.ipalyzer.com/"+ip.strip())
+                            except:
+                                print("hata")
+                sonuc_dosyası.close()
+            else:
+                print("Çıktı dosyası seçilmedi.")
+        else:
+            print("girdi dosyası seçilmedi")
+    elif tur_secimi == 2:
+        ip=input("Ip adresini girin:")
+        vt_skor=str(vt_ip_sorgu(ip, key_vt))
+        abuse_skor=str(abuse_ip_sorgu(ip, key_abuse))
+        print("Virustotal:"+vt_skor)
+        print("AbuseIpDB:"+abuse_skor)
+        if vt_skor!="Hata. Girdi veya API key hatalı Kontrol edin" or abuse_skor!="Hata. Girdi veya API key hatalı kontrol edin":
+
+            print("https://www.virustotal.com/gui/ip-address/"+ip)
+            print("https://www.abuseipdb.com/check/"+ip)
+            print("https://www.ipalyzer.com/"+ip)
+    else:
+        print("Yanlış girş yaptınız 1 veya 2 yi tuşlayın ve Enter tuşuna basın.")
+
+ip()
+input("İşlemler tamamlandı.\nÇıkmak için Enter a basın.")
