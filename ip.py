@@ -1,6 +1,6 @@
 import requests
 import json
-import pycountry
+from pycountry import countries
 
 def api_check():
     try:
@@ -55,7 +55,7 @@ def abuse_ip_sorgu(ip,key_abuse):
         return "Hata. Girdi veya API key hatalı kontrol edin"
 def country(code):
     try:
-        country = pycountry.countries.get(alpha_2=code.upper())
+        country = countries.get(alpha_2=code.upper())
         if country:
             return country.name
     except LookupError:
