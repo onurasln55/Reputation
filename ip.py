@@ -1,5 +1,5 @@
-import requests
-import json
+from requests import request,get
+from json import loads
 from pycountry import countries
 
 def api_check():
@@ -31,8 +31,8 @@ def vt_ip_sorgu(ip,key_vt):
         "x-apikey": key_vt
     }
     try:
-        response = requests.request("GET", url, headers=headers)
-        json_response = json.loads(response.text)
+        response = request("GET", url, headers=headers)
+        json_response = loads(response.text)
         return json_response["data"]["attributes"]["last_analysis_stats"]["malicious"]
     except:
         return "Hata. Girdi veya API key hatalı Kontrol edin"
@@ -47,8 +47,8 @@ def abuse_ip_sorgu(ip,key_abuse):
         'Key': key_abuse
     }
     try:
-        response = requests.request(method='GET', url=url, headers=headers, params=querystring)
-        json_response = json.loads(response.text)
+        response = request(method='GET', url=url, headers=headers, params=querystring)
+        json_response = loads(response.text)
         return json_response["data"]["abuseConfidenceScore"],json_response["data"]["countryCode"],json_response["data"]["usageType"],json_response["data"]["isp"]
 
     except:
@@ -64,7 +64,7 @@ def country(code):
 
 def country_code_to_name_restcountries(code):
     url = f"https://restcountries.com/v3/alpha/{code}"
-    response = requests.get(url)
+    response = get(url)
     data = response.json()
     if response.status_code == 200:
         return data["name"]["common"]
