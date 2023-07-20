@@ -1,4 +1,4 @@
-import requests
+from requests import request
 import json
 
 def vt_hash_reputation(hash,api):
@@ -8,7 +8,7 @@ def vt_hash_reputation(hash,api):
         "x-apikey": api
     }
     try:
-        response = requests.request("GET", url, headers=headers)
+        response = request("GET", url, headers=headers)
         json_response = json.loads(response.text)
         r = json_response["data"]
         malicious = r[0]["attributes"]["last_analysis_stats"]["malicious"]
@@ -49,4 +49,4 @@ def dosyadan_islem(api):
     except:
         print("File read error")
 
-dosyadan_islem("")#api input
+dosyadan_islem()#api input
